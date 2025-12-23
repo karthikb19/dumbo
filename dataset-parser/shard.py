@@ -81,7 +81,7 @@ def shard_pgn(in_path: str, out_dir: str, games_per_shard: int = 10000):
     if fout:
         fout.close()
 
-def process_shard(path: str, out_dir: str = "parquet_out/2025-10", batch_rows: int = 100_000) -> Tuple[int, int]:
+def process_shard(path: str, out_dir: str = "parquet_out/2025-11", batch_rows: int = 100_000) -> Tuple[int, int]:
     out_path = Path(out_dir) / (Path(path).stem + ".parquet")
     out_path.parent.mkdir(exist_ok=True, parents=True)
 
