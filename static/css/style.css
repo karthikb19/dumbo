@@ -1,0 +1,525 @@
+/* ============================================
+   Chess UI — Calm Premium Design System
+   ============================================ */
+
+/* --- Design Tokens --- */
+:root {
+  /* Colors */
+  --bg-base: #FAF9F7;
+  --bg-surface: #FFFFFF;
+  --border-subtle: #E8E6E3;
+  --border-focus: #2F5233;
+  
+  --text-primary: #2D2D2D;
+  --text-secondary: #6B6B6B;
+  --text-muted: #9B9B9B;
+  
+  --accent: #2F5233;
+  --accent-hover: #234026;
+  --accent-subtle: #E8F0E9;
+  
+  --highlight-last: rgba(47, 82, 51, 0.18);
+  --highlight-check: rgba(200, 50, 50, 0.25);
+  --highlight-legal: rgba(47, 82, 51, 0.35);
+  
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-ui: 'IBM Plex Sans', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.03);
+  
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  
+  /* Transitions */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--bg-base);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+  min-height: 100vh;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* --- Layout Shell --- */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-lg);
+  min-height: 100vh;
+}
+
+/* --- Header --- */
+header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  animation: fadeSlideIn 0.5s var(--ease-out) both;
+}
+
+header h1 {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: var(--space-xs);
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* --- Game Container --- */
+.game-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* --- Cards --- */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  animation: fadeSlideIn 0.5s var(--ease-out) both;
+}
+
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+
+.card h2 {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+}
+
+/* --- Controls --- */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s var(--ease-out);
+  text-decoration: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  transform: scale(1.02);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background-color: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* --- Color Selection --- */
+.color-selection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.color-selection p {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* --- Game Status --- */
+#gameStatus p {
+  margin-bottom: var(--space-sm);
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+#gameStatus strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+#turnIndicator {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+#statusText {
+  font-weight: 500;
+}
+
+.status-check {
+  color: #C53030 !important;
+}
+
+/* --- Move History --- */
+.move-history {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: var(--space-xs);
+}
+
+.move-history::-webkit-scrollbar {
+  width: 4px;
+}
+
+.move-history::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.move-history::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 2px;
+}
+
+.move-history::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.empty-state {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: var(--space-lg);
+  font-size: 0.875rem;
+}
+
+.move-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-sm);
+  margin-bottom: 2px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease;
+}
+
+.move-item:hover {
+  background-color: var(--accent-subtle);
+}
+
+.move-number {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text-muted);
+  min-width: 32px;
+  font-size: 0.8125rem;
+}
+
+.move-notation {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 48px;
+  font-size: 0.8125rem;
+}
+
+/* --- Board Area --- */
+.board-wrapper {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  animation: fadeIn 0.6s var(--ease-out) 0.1s both;
+}
+
+.chess-board {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* --- Captured Pieces Placeholder --- */
+.captured-area {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-subtle);
+  min-height: 40px;
+}
+
+.captured-area-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+/* --- Engine Thinking Overlay --- */
+.engine-thinking {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.96);
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  z-index: 100;
+  border: 1px solid var(--border-subtle);
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto var(--space-md);
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.engine-thinking p {
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+/* --- Chessboard.js Overrides --- */
+.board-b72b1 {
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Light squares - warm cream */
+.white-1e1d7 {
+  background-color: #F0E6D6 !important;
+}
+
+/* Dark squares - muted olive-brown */
+.black-3c85d {
+  background-color: #B7A892 !important;
+}
+
+/* Last move highlight */
+.highlight-white,
+.highlight-black {
+  background-color: var(--highlight-last) !important;
+}
+
+/* Legal move indicator (optional) */
+.legal-move::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24%;
+  height: 24%;
+  background-color: var(--highlight-legal);
+  border-radius: 50%;
+}
+
+/* Check highlight */
+.square-check {
+  background-color: var(--highlight-check) !important;
+}
+
+/* --- Animations --- */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Responsive Design --- */
+
+/* Tablet / small desktop */
+@media (max-width: 900px) {
+  .game-container {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+  
+  .sidebar {
+    order: 2;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+  }
+  
+  .board-wrapper {
+    order: 1;
+  }
+  
+  .chess-board {
+    max-width: 480px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  html {
+    font-size: 15px;
+  }
+  
+  .container {
+    padding: var(--space-md);
+  }
+  
+  header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+  }
+  
+  header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .game-container {
+    gap: var(--space-md);
+  }
+  
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+  
+  .card {
+    padding: var(--space-md);
+  }
+  
+  .board-wrapper {
+    padding: var(--space-md);
+  }
+  
+  .chess-board {
+    max-width: 100%;
+  }
+  
+  .btn {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* Large desktop - extra breathing room */
+@media (min-width: 1200px) {
+  .container {
+    padding: var(--space-2xl) var(--space-xl);
+  }
+  
+  .game-container {
+    grid-template-columns: 320px 1fr;
+    gap: var(--space-2xl);
+  }
+  
+  .chess-board {
+    max-width: 560px;
+  }
+}

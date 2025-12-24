@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from typing import Dict, List, Tuple, Optional
+from collections import Counter
 
 import torch
 import chess
@@ -37,9 +38,17 @@ def print_board(board: chess.Board) -> None:
     print()
     print(board)  # <-- default: letters like R N B Q K P
     turn = "White" if board.turn == chess.WHITE else "Black"
-    print(f"\nTurn: {turn} | Fullmove: {board.fullmove_number} | Halfmove: {board.halfmove_clock}")
+    
+    # Get repetition count for current position
+    rep_stats = get_repetition_stats(board)
+    current_pos = get_position_key(board)
+    rep_count = rep_stats[current_pos]
+    
+    print(f"\nTurn: {turn} | Fullmove: {board.fullmove_number} | Halfmove: {board.halfmove_clock} | Repetitions: {rep_count}")
     if board.is_check():
         print("CHECK!")
+    if rep_count >= 3:
+        print("⚠️  THREEFOLD REPETITION - Draw can be claimed!")
     print("FEN:", board.fen())
     print()
 
@@ -51,6 +60,7 @@ def print_help() -> None:
         "  resign           Resign\n"
         "  fen              Print current FEN\n"
         "  moves            Print legal moves (SAN)\n"
+        "  reps             Show position repetition statistics\n"
         "  undo             Undo last full turn (you + engine), if possible\n"
         "\nMove input formats:\n"
         "  SAN: Nf3, exd5, O-O, Qh5+, a8=Q, etc.\n"
@@ -66,6 +76,46 @@ def legal_moves_san(board: chess.Board, limit: int = 200) -> List[str]:
             break
         out.append(board.san(mv))
     return out
+
+
+def get_position_key(board: chess.Board) -> str:
+    """
+    Returns a unique key for the current position.
+    Uses board_fen() which includes piece placement, turn, castling, and en passant.
+    This is what chess uses for threefold repetition.
+    """
+    return board.board_fen() + " " + ("w" if board.turn else "b") + " " + board.castling_xfen() + " " + (board.ep_square and chess.square_name(board.ep_square) or "-")
+
+
+def get_repetition_stats(board: chess.Board) -> Dict[str, int]:
+    """
+    Returns a Counter of how many times each position has occurred in the game.
+    """
+    position_counter = Counter()
+    temp_board = chess.Board(chess.STARTING_FEN)
+    
+    # Replay all moves to track positions
+    for move in board.move_stack:
+        position_counter[get_position_key(temp_board)] += 1
+        temp_board.push(move)
+    
+    # Count current position
+    position_counter[get_position_key(temp_board)] += 1
+    
+    return position_counter
+
+
+def get_current_rep_count(board: chess.Board) -> int:
+    """
+    Returns the repetition count for the current position (0-indexed for transformer).
+    0 = first time seeing this position
+    1 = seen once before (2nd occurrence)
+    2+ = seen 2+ times before (clamped to 2 in the model)
+    """
+    rep_stats = get_repetition_stats(board)
+    current_pos = get_position_key(board)
+    # Subtract 1 because rep_stats counts current occurrence, but we want "times seen before"
+    return max(0, rep_stats[current_pos] - 1)
 
 
 def main():
@@ -95,7 +145,8 @@ def main():
 
     # If engine goes first (user chose black), play one engine move immediately
     if board.turn == engine_color and not board.is_game_over():
-        mv = choose_legal_move(board, model, uci_to_id, id_to_uci, device=device)
+        rep = get_current_rep_count(board)
+        mv = choose_legal_move(board, model, uci_to_id, id_to_uci, device=device, rep=rep)
         print(f"Engine plays: {board.san(mv)}  ({mv.uci()})")
         board.push(mv)
         print_board(board)
@@ -103,6 +154,18 @@ def main():
     while True:
         if board.is_game_over():
             print("Game over:", board.result(), "-", board.outcome())
+            
+            # Show repetition statistics
+            rep_stats = get_repetition_stats(board)
+            repeated_positions = {k: v for k, v in rep_stats.items() if v > 1}
+            print("\n=== Game Statistics ===")
+            print(f"Total unique positions: {len(rep_stats)}")
+            print(f"Repeated positions: {len(repeated_positions)}")
+            if repeated_positions:
+                max_reps = max(repeated_positions.values())
+                print(f"Maximum repetitions: {max_reps}x")
+            print()
+            
             break
 
         # User turn?
@@ -124,6 +187,16 @@ def main():
             if s.lower() == "moves":
                 ms = legal_moves_san(board)
                 print("Legal moves (SAN):", " ".join(ms))
+                continue
+            if s.lower() == "reps":
+                rep_stats = get_repetition_stats(board)
+                repeated_positions = {k: v for k, v in rep_stats.items() if v > 1}
+                if repeated_positions:
+                    print(f"\nPosition repetitions (showing {len(repeated_positions)} repeated positions):")
+                    for pos, count in sorted(repeated_positions.items(), key=lambda x: x[1], reverse=True):
+                        print(f"  {count}x: {pos[:50]}...")  # Show first 50 chars of position key
+                else:
+                    print("No positions have been repeated yet.")
                 continue
             if s.lower() == "undo":
                 # Undo last full turn (engine + you) if possible
@@ -158,7 +231,8 @@ def main():
             # tokens_bytes = fen_helpers.encode_state(board, rep=0)
             # print("tokens:", list(tokens_bytes))
 
-            mv = choose_legal_move(board, model, uci_to_id, id_to_uci, device=device)
+            rep = get_current_rep_count(board)
+            mv = choose_legal_move(board, model, uci_to_id, id_to_uci, device=device, rep=rep)
             san = board.san(mv)
             print(f"Engine> {san}  ({mv.uci()})")
             board.push(mv)

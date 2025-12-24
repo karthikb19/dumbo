@@ -26,8 +26,8 @@ def load_uci_maps(path: str) -> Tuple[Dict[str, int], List[str]]:
 
 
 @torch.inference_mode()
-def choose_legal_move(board: chess.Board, model: DumboBC, uci_to_id: Dict[str, int], id_to_uci: List[str], device: str = "cuda") -> chess.Move:
-    tokens_bytes = fen_helpers.encode_state(board, rep=0)  # bytes length 78:contentReference[oaicite:4]{index=4}
+def choose_legal_move(board: chess.Board, model: DumboBC, uci_to_id: Dict[str, int], id_to_uci: List[str], device: str = "cuda", rep: int = 0) -> chess.Move:
+    tokens_bytes = fen_helpers.encode_state(board, rep=rep)
     tokens = torch.tensor(list(tokens_bytes), dtype=torch.long, device=device).unsqueeze(0)  # [1,78]
 
     logits = model(tokens)[0]  # [1968]

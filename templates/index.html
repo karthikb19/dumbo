@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dumbo Chess Engine</title>
+    
+    <!-- Fonts: Playfair Display (display) + IBM Plex Sans (UI) + IBM Plex Mono (notation) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Chessboard.js styles -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    
+    <!-- App styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dumbo</h1>
+            <p class="subtitle">Play against the chess engine</p>
+        </header>
+
+        <div class="game-container">
+            <div class="sidebar">
+                <div class="card">
+                    <h2>Controls</h2>
+                    <div class="controls">
+                        <button id="newGameBtn" class="btn btn-primary">New Game</button>
+                        <div class="color-selection" id="colorSelection" style="display: none;">
+                            <p>Choose your color</p>
+                            <button class="btn btn-secondary" data-color="white">Play as White</button>
+                            <button class="btn btn-secondary" data-color="black">Play as Black</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Status</h2>
+                    <div id="gameStatus">
+                        <p><strong>Turn:</strong> <span id="turnIndicator">White</span></p>
+                        <p><strong>Status:</strong> <span id="statusText">Ready to play</span></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Move History</h2>
+                    <div id="moveHistory" class="move-history">
+                        <p class="empty-state">No moves yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-wrapper">
+                <div id="board" class="chess-board"></div>
+                <div id="engineThinking" class="engine-thinking" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Engine is thinking...</p>
+                </div>
+                
+                <!-- Placeholder for captured pieces / evaluation -->
+                <div class="captured-area">
+                    <p class="captured-area-label">Captured pieces</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
