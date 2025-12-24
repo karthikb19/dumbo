@@ -16,7 +16,7 @@ import dumbo_bc
 import parquet_dataset
 
 
-DATA_DIRS = ["parquet_out/2025-09"]
+DATA_DIRS = ["parquet_out/2025-10-MidGame", "parquet_out/Lichess-Puzzles"]
 OUT_PATH = "checkpoints/dumbo_bc.pt"
 
 
