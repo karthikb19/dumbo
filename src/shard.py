@@ -81,7 +81,7 @@ def shard_pgn(in_path: str, out_dir: str, games_per_shard: int = 10000):
     if fout:
         fout.close()
 
-def process_shard(path: str, out_dir: str = "parquet_out/2025-11", batch_rows: int = 100_000) -> Tuple[int, int]:
+def process_shard(path: str, out_dir: str = "parquet_out/2025-10-MidGame", batch_rows: int = 100_000) -> Tuple[int, int]:
     out_path = Path(out_dir) / (Path(path).stem + ".parquet")
     out_path.parent.mkdir(exist_ok=True, parents=True)
 
@@ -99,27 +99,33 @@ def process_shard(path: str, out_dir: str = "parquet_out/2025-11", batch_rows: i
                 
                 rep_counts = {}
                 rep_counts[_repetition_key(board)] = 0
-                
+
+                ply_idx = 0
                 for move in game.mainline_moves():
                     key = _repetition_key(board)
-                    seen = rep_counts.get(key, 1)
-                    rep = min(seen - 1, 2)
+                    seen = rep_counts.get(key, 1)      # count of times we've seen this position so far
+                    rep = min(seen - 1, 2)            # 0,1,2 (cap at 2)
 
-                    tokens = fen_helpers.encode_state(board, rep)
-                    move_id = uci_helpers.UCI_TO_ID.get(move.uci())
+                    # Only start writing AFTER the first N full moves (i.e., after 2N plies)
+                    if ply_idx >= 24:
+                        tokens = fen_helpers.encode_state(board, rep)
+                        move_id = uci_helpers.UCI_TO_ID.get(move.uci())
+                        if move_id is None:
+                            raise KeyError(f"Move {move.uci()} not found in uci_to_id")
 
-                    if move_id is None:
-                        raise KeyError(f"Move {move.uci()} not found in uci_to_id")
-                    
-                    tokens_buffer.append(tokens)
-                    move_buffer.append(move_id)
+                        tokens_buffer.append(tokens)
+                        move_buffer.append(move_id)
+
+                        if len(tokens_buffer) >= batch_rows:
+                            rows += _flush(writer, tokens_buffer, move_buffer)
+
                     board.push(move)
 
                     rep_k = _repetition_key(board)
                     rep_counts[rep_k] = rep_counts.get(rep_k, 0) + 1
 
-                    if len(tokens_buffer) >= batch_rows:
-                        rows += _flush(writer, tokens_buffer, move_buffer)
+                    ply_idx += 1
+                
         rows += _flush(writer, tokens_buffer, move_buffer)
 
     return games, rows

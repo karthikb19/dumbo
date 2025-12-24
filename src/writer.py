@@ -17,8 +17,8 @@ def _wrap(t):
     return shard.process_shard(*t)
 
 def main():
-    shard_paths = sorted(Path("datasets/shards-2025-11").glob("shard_*.pgn"))
-    args = [(str(path), "parquet_out/2025-11", 100_000) for path in shard_paths]
+    shard_paths = sorted(Path("datasets/shards-2025-10").glob("shard_*.pgn"))
+    args = [(str(path), "parquet_out/2025-10-MidGame", 100_000) for path in shard_paths]
 
     total_games = 0
     total_rows = 0
