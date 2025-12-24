@@ -14,7 +14,7 @@ import pyarrow.parquet as pq
 class ParquetStreamConfig:
     seq_len: int = 78
     columns: Tuple[str, ...] = ("tokens", "move_id")
-    batch_rows: int = 16384
+    batch_rows: int = 16384 
     shuffle_files: bool = True
     shuffle_buffer_batches: int = 64 # buffers in flight so thats a total of 16384 * 64 bufffers in flight!
 

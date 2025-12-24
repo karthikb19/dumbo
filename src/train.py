@@ -79,7 +79,7 @@ class FixedMicrobatchSlicer:
 @dataclass
 class TrainConfig:
     steps: int = 200_000
-    global_batch: int = 16_384
+    global_batch: int = 16384
     microbatch_max: int = 8_192
     
     lr: float = 3e-4
@@ -100,7 +100,7 @@ class TrainConfig:
     grad_clip: float = 1.0
     # Parquet reader batch size (CPU). Independent of microbatch.
     # Keep fairly big for throughput.
-    parquet_batch_rows: int = 16_384
+    parquet_batch_rows: int = 16384 
     shuffle_buffer_batches: int = 64
 
 def lr_at(step: int, base_lr: float, warmup_steps: int, total_steps: int) -> float:
@@ -133,7 +133,7 @@ def main():
     model = dumbo_bc.DumboBC(cfg).to(device)
     print(f"Model Config: {asdict(cfg)}")
 
-    microbatch_size = 2048
+    microbatch_size = 1024
     grad_accum = max(1, int(math.ceil(train_cfg.global_batch / microbatch_size)))
     effective_batch_size = microbatch_size * grad_accum
 
@@ -156,6 +156,8 @@ def main():
         prefetch_factor=train_cfg.prefetch_factor if train_cfg.num_workers > 0 else None,
     )
 
+    print("Data Loaded!")
+
     slicer = FixedMicrobatchSlicer(dl, micro=microbatch_size)
 
     opt = torch.optim.AdamW(model.parameters(), lr=train_cfg.lr, betas=(0.9, 0.95), weight_decay=train_cfg.weight_decay)
@@ -166,6 +168,7 @@ def main():
     steps_in_window = 0
     ema_loss = None
 
+    print("Started Model Training!")
     for step in range(train_cfg.steps):
         lr = lr_at(step, train_cfg.lr, train_cfg.warmup_steps, train_cfg.steps)
         for pg in opt.param_groups:
@@ -199,7 +202,7 @@ def main():
             
         steps_in_window += 1
         
-        if (step + 1) % train_cfg.log_every == 0:
+        if True:
             torch.cuda.synchronize()
             dt = time.time() - t_log0
             steps_per_s = steps_in_window / max(dt, 1e-9)
