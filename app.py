@@ -20,26 +20,46 @@ from infer_bc import load_checkpoint, load_uci_maps, choose_legal_move
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
-# Global model and maps (loaded once at startup)
-MODEL = None
+# Global models and maps (loaded once at startup)
+MODEL_EARLY = None  # For <= 24 plys
+MODEL_LATE = None   # For > 24 plys
 UCI_TO_ID = None
 ID_TO_UCI = None
 DEVICE = None
 
 
 def init_model():
-    """Initialize the chess engine model."""
-    global MODEL, UCI_TO_ID, ID_TO_UCI, DEVICE
+    """Initialize the chess engine models."""
+    global MODEL_EARLY, MODEL_LATE, UCI_TO_ID, ID_TO_UCI, DEVICE
     
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Loading model on device: {DEVICE}")
+    print(f"Loading models on device: {DEVICE}")
     
-    # Load UCI maps and model
+    # Load UCI maps
     UCI_TO_ID, ID_TO_UCI = load_uci_maps("datasets/uci_1968.txt")
-    MODEL = load_checkpoint("checkpoints/dumbo_bc.pt").to(DEVICE)
-    MODEL.eval()
     
-    print("Model loaded successfully!")
+    # Load early game model (for <= 24 plys)
+    MODEL_EARLY = load_checkpoint("checkpoints/dumbo_bc_5000.pt").to(DEVICE)
+    MODEL_EARLY.eval()
+    print("Early game model (dumbo_bc_5000.pt) loaded!")
+    
+    # Load late game model (for > 24 plys)
+    MODEL_LATE = load_checkpoint("checkpoints/dumbo_bc.pt").to(DEVICE)
+    MODEL_LATE.eval()
+    print("Late game model (dumbo_bc.pt) loaded!")
+    
+    print("All models loaded successfully!")
+
+
+def get_model_for_ply(ply_count: int):
+    """Select the appropriate model based on ply count.
+    
+    Uses dumbo_bc_5000.pt for opening (<=24 plys),
+    dumbo_bc.pt for later in the game (>24 plys).
+    """
+    if ply_count > 24:
+        return MODEL_LATE
+    return MODEL_EARLY
 
 
 def get_position_key(board: chess.Board) -> str:
@@ -127,8 +147,9 @@ def new_game():
     
     # If player chose black, engine makes first move
     if player_color == 'black':
-        # Rep is 0 at start of game
-        engine_move = choose_legal_move(board, MODEL, UCI_TO_ID, ID_TO_UCI, device=DEVICE, rep=0)
+        # Rep is 0 at start of game, ply is 0
+        model = get_model_for_ply(0)
+        engine_move = choose_legal_move(board, model, UCI_TO_ID, ID_TO_UCI, device=DEVICE, rep=0)
         engine_move_san = board.san(engine_move)
         board.push(engine_move)
         update_game_state(board, engine_move)
@@ -185,8 +206,10 @@ def make_move():
         move_stack = session.get('move_stack_uci', [])
         rep = get_current_rep_count(board, move_stack)
         
-        # Engine makes a move with rep info
-        engine_move = choose_legal_move(board, MODEL, UCI_TO_ID, ID_TO_UCI, device=DEVICE, rep=rep)
+        # Select model based on ply count and make a move
+        ply_count = len(move_stack)
+        model = get_model_for_ply(ply_count)
+        engine_move = choose_legal_move(board, model, UCI_TO_ID, ID_TO_UCI, device=DEVICE, rep=rep)
         engine_move_san = board.san(engine_move)
         board.push(engine_move)
         update_game_state(board, engine_move)

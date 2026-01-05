@@ -1,6 +1,8 @@
 import torch
 import chess
 
+chess.enginee
+
 import constants
 import fen_helpers
 
@@ -40,7 +42,7 @@ def main():
     CKPT = "checkpoints/dumbo_bc.pt"              # <-- change if yours is elsewhere (e.g. checkpoints/dumbo_bc.pt)
     UCI_FILE = "datasets/uci_1968.txt"  # <-- change if needed
 
-    FEN = "3q1rk1/2p2pb1/R1B1p1pp/5b2/2QPN3/2P1P3/1r3PPP/4R1K1 b - - 0 24"  # try others above
+    FEN = "B1b1kb1r/p1p2ppp/8/1p4q1/3n4/8/PPPP1PPP/R1BQK2R b KQk - 0 11"  # try others above
     
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -71,7 +73,7 @@ def main():
     mv = choose_legal_move(board, model, uci_to_id, id_to_uci, device=device)
     print("\nCHOSEN MOVE:", mv.uci())
 
-    topk, _ = topk_legal_moves(board, model, uci_to_id, id_to_uci, device=device,k=30)
+    topk, _ = topk_legal_moves(board, model, uci_to_id, id_to_uci, device=device,k=5)
     print("\nTop-10 legal moves by model prob:")
     for uci, p in topk:
         print(f"  {uci:6s}  p={p:.4f}")
